@@ -58,10 +58,6 @@ app.get('/events', (req, res) => {
     res.render('events');
 });
 
-// Database connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/event_management')
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('MongoDB connection error:', err));
 
 // API Routes with /api prefix
 app.use('/api/auth', authRoutes);
@@ -77,6 +73,15 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-}); 
+
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/event_management')
+    .then(() => {
+        console.log('✅ Connected to MongoDB');
+        app.listen(PORT, () => {
+            console.log(`🚀 Server is running on port ${PORT}`);
+        });
+    })
+    .catch(err => {
+        console.error('❌ MongoDB connection error:', err);
+        process.exit(1); // ❗ Dừng server nếu DB lỗi, tránh app.listen vô nghĩa
+    });
