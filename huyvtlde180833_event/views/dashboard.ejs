@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Event Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .navbar {
+            background: rgba(255,255,255,0.95) !important;
+            backdrop-filter: blur(10px);
+        }
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            border: none;
+        }
+        .event-card {
+            transition: transform 0.3s ease;
+        }
+        .event-card:hover {
+            transform: translateY(-5px);
+        }
+        .btn-custom {
+            border-radius: 25px;
+            padding: 8px 20px;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .stat-item {
+            padding: 1rem;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+        .stat-item:hover {
+            background: rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+        .event-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .meta-item {
+            display: flex;
+            align-items: center;
+            padding: 0.25rem 0;
+            font-size: 0.9rem;
+        }
+        .meta-item i {
+            width: 20px;
+            text-align: center;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 0.75rem 1.5rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/dashboard">
+                <i class="fas fa-calendar-alt me-2"></i>Event Management
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text me-3">
+                    <i class="fas fa-user me-1"></i>
+                    <span id="username"></span>
+                </span>
+                <a class="nav-link" href="#" onclick="logout()">
+                    <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <!-- Thống kê tổng quan -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-calendar-alt fa-2x mb-2"></i>
+                        <h4 id="total-events">0</h4>
+                        <p class="mb-0">Tổng sự kiện</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center" style="background: linear-gradient(135deg, #ffc107 0%, #ff8f00 100%); color: white;">
+                    <div class="card-body">
+                        <i class="fas fa-clock fa-2x mb-2"></i>
+                        <h4 id="upcoming-events">0</h4>
+                        <p class="mb-0">Sự kiện sắp tới</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center" style="background: linear-gradient(135deg, #28a745 0%, #20c997 100%); color: white;">
+                    <div class="card-body">
+                        <i class="fas fa-users fa-2x mb-2"></i>
+                        <h4 id="available-spots">0</h4>
+                        <p class="mb-0">Chỗ còn trống</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-calendar-check fa-2x mb-2"></i>
+                        <h4 id="registered-count">0</h4>
+                        <p class="mb-0">Đã đăng ký</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar me-2"></i>Danh sách sự kiện
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="events-container">
+                            <div class="text-center">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Sự kiện của tôi
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div id="my-registrations">
+                            <p class="text-muted">Đang tải...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Registration Modal -->
+    <div class="modal fade" id="registrationModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Đăng ký sự kiện</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="event-details"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                    <button type="button" class="btn btn-primary" id="confirm-register">Đăng ký</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        // Check authentication and initialize
+        (function initApp() {
+            const token = localStorage.getItem('token');
+            const user = JSON.parse(localStorage.getItem('user') || '{}');
+            
+            console.log('Token:', token);
+            console.log('User:', user);
+            
+            if (!token || !user.username) {
+                console.log('No token or user found, redirecting to login');
+                localStorage.clear();
+                window.location.href = '/login';
+                return;
+            }
+
+            document.getElementById('username').textContent = user.username || 'User';
+
+            // Set axios default headers
+            axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+            
+            // Add response interceptor to handle auth errors
+            axios.interceptors.response.use(
+                response => response,
+                error => {
+                    if (error.response?.status === 401) {
+                        console.log('Token expired, redirecting to login');
+                        localStorage.removeItem('token');
+                        localStorage.removeItem('user');
+                        window.location.href = '/login';
+                    }
+                    return Promise.reject(error);
+                }
+            );
+
+            let currentEventId = null;
+
+            // Load events and statistics
+            async function loadEvents() {
+                try {
+                    console.log('Loading events...');
+                    const response = await axios.get('/api/events');
+                    const events = response.data;
+                    console.log('Events loaded:', events);
+                    
+                    // Calculate statistics
+                    const totalEvents = events.length;
+                    const now = new Date();
+                    const upcomingEvents = events.filter(event => new Date(event.date) > now).length;
+                    const availableSpots = events.reduce((sum, event) => {
+                        const capacity = event.maxCapacity || event.capacity || 0;
+                        const registered = event.currentRegistrations || 0;
+                        return sum + Math.max(0, capacity - registered);
+                    }, 0);
+                    
+                    // Update statistics
+                    document.getElementById('total-events').textContent = totalEvents;
+                    document.getElementById('upcoming-events').textContent = upcomingEvents;
+                    document.getElementById('available-spots').textContent = availableSpots;
+                    
+                    // Display events list
+                    displayEvents(events);
+                    
+                    console.log('Stats updated:', { totalEvents, upcomingEvents, availableSpots });
+                } catch (error) {
+                    console.error('Error loading events:', error);
+                    console.error('Error details:', error.response);
+                    
+                    // Hiển thị lỗi cho user
+                    document.getElementById('total-events').textContent = 'Error';
+                    document.getElementById('upcoming-events').textContent = 'Error';
+                    document.getElementById('available-spots').textContent = 'Error';
+                    document.getElementById('events-container').innerHTML = '<p class="text-danger">Không thể tải danh sách sự kiện.</p>';
+                }
+            }
+
+            // Display events list
+            function displayEvents(events) {
+                const container = document.getElementById('events-container');
+                
+                if (events.length === 0) {
+                    container.innerHTML = '<p class="text-muted">Không có sự kiện nào.</p>';
+                    return;
+                }
+
+                container.innerHTML = events.map(event => `
+                    <div class="card event-card mb-3">
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h5 class="card-title text-primary">${event.name}</h5>
+                                    <p class="card-text text-muted">${event.description}</p>
+                                    <div class="event-meta">
+                                        <div class="meta-item">
+                                            <i class="fas fa-map-marker-alt me-2 text-danger"></i>
+                                            <span>${event.location}</span>
+                                        </div>
+                                        <div class="meta-item">
+                                            <i class="fas fa-calendar me-2 text-primary"></i>
+                                            <span>${new Date(event.date).toLocaleString('vi-VN')}</span>
+                                        </div>
+                                        ${event.endDate ? `
+                                            <div class="meta-item">
+                                                <i class="fas fa-calendar-check me-2 text-success"></i>
+                                                <span>Đến: ${new Date(event.endDate).toLocaleString('vi-VN')}</span>
+                                            </div>
+                                        ` : ''}
+                                        <div class="meta-item">
+                                            <i class="fas fa-users me-2 text-info"></i>
+                                            <span>${event.currentRegistrations || 0}/${event.maxCapacity || event.capacity || 'N/A'} người</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4 text-end d-flex flex-column justify-content-center">
+                                    <button class="btn btn-primary btn-custom shadow" onclick="showRegistrationModal('${event._id}', '${event.name}')">
+                                        <i class="fas fa-plus me-2"></i>Đăng ký ngay
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+
+            // Show registration modal
+            window.showRegistrationModal = function(eventId, eventName) {
+                currentEventId = eventId;
+                document.getElementById('event-details').innerHTML = `
+                    <p>Bạn có chắc chắn muốn đăng ký sự kiện: <strong>${eventName}</strong>?</p>
+                `;
+                new bootstrap.Modal(document.getElementById('registrationModal')).show();
+            }
+
+            // Register for event
+            document.getElementById('confirm-register').addEventListener('click', async () => {
+                try {
+                    await axios.post('/api/registrations', {
+                        eventId: currentEventId
+                    });
+                    
+                    alert('Đăng ký thành công!');
+                    bootstrap.Modal.getInstance(document.getElementById('registrationModal')).hide();
+                    loadMyRegistrations();
+                    loadEvents(); // Refresh events list
+                } catch (error) {
+                    alert(error.response?.data?.message || 'Đăng ký thất bại');
+                }
+            });
+
+            // Load my registrations
+            async function loadMyRegistrations() {
+                try {
+                    console.log('=== LOADING MY REGISTRATIONS ===');
+                    console.log('User object:', user);
+                    console.log('Token:', localStorage.getItem('token'));
+                    
+                    // Gọi API riêng cho student
+                    console.log('Making request to /api/registrations/my');
+                    const response = await axios.get('/api/registrations/my');
+                    console.log('My registrations response:', response.data);
+                    
+                    const myRegistrations = response.data.registrations || [];
+                    console.log('Parsed registrations:', myRegistrations);
+                    
+                    // Update count in stats
+                    document.getElementById('registered-count').textContent = myRegistrations.length;
+                    
+                    const container = document.getElementById('my-registrations');
+                    if (myRegistrations.length === 0) {
+                        container.innerHTML = '<p class="text-muted small">Chưa đăng ký sự kiện nào.</p>';
+                        return;
+                    }
+
+                    // Lấy thông tin events để hiển thị tên
+                    console.log('Getting events for mapping...');
+                    const eventsResponse = await axios.get('/api/events');
+                    const events = eventsResponse.data;
+                    const eventsMap = {};
+                    events.forEach(event => {
+                        eventsMap[event._id] = event.name;
+                    });
+                    console.log('Events map:', eventsMap);
+
+                    container.innerHTML = myRegistrations.slice(0, 5).map(reg => `
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small>${eventsMap[reg.eventId] || 'Event không tồn tại'}</small>
+                            <button class="btn btn-sm btn-outline-danger" onclick="unregister('${reg._id}')">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    `).join('');
+                    
+                    console.log('=== MY REGISTRATIONS LOADED SUCCESSFULLY ===');
+                } catch (error) {
+                    console.error('=== ERROR LOADING MY REGISTRATIONS ===');
+                    console.error('Error:', error);
+                    console.error('Error response:', error.response);
+                    console.error('Error status:', error.response?.status);
+                    console.error('Error data:', error.response?.data);
+                    
+                    document.getElementById('my-registrations').innerHTML = '<p class="text-danger small">Lỗi: ' + (error.response?.data?.message || error.message) + '</p>';
+                    document.getElementById('registered-count').textContent = 'Error';
+                }
+            }
+
+            // Unregister from event
+            window.unregister = async function(registrationId) {
+                if (confirm('Bạn có chắc chắn muốn hủy đăng ký?')) {
+                    try {
+                        await axios.delete(`/api/registrations/${registrationId}`);
+                        alert('Hủy đăng ký thành công!');
+                        loadMyRegistrations();
+                        loadEvents(); // Refresh events list too
+                    } catch (error) {
+                        alert(error.response?.data?.message || 'Hủy đăng ký thất bại');
+                    }
+                }
+            }
+
+            // Logout function
+            window.logout = function() {
+                localStorage.removeItem('token');
+                localStorage.removeItem('user');
+                window.location.href = '/login';
+            }
+
+            // Load data on page load
+            loadEvents();
+            loadMyRegistrations();
+        })(); // End of initApp function
+    </script>
+</body>
+</html> 
