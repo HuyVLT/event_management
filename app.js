@@ -72,6 +72,20 @@ app.use((err, req, res, next) => {
     res.status(500).json({ message: 'Something went wrong!' });
 });
 
+const User = require('./models/userModel');
+const Event = require('./models/eventModel');
+
+app.get('/test-users', async (req, res) => {
+  const users = await User.find({});
+  res.json(users);
+});
+
+app.get('/test-events', async (req, res) => {
+  const events = await Event.find({});
+  res.json(events);
+});
+
+
 const PORT = process.env.PORT || 3000;
 
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/event_management')
